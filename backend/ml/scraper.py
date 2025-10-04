@@ -20,9 +20,18 @@ def get_ids_noob(region, queue, tier, division):
         players.append(player.get("puuid"))
     return players
 
+def get_ids_masters(region, queue):
+    url = f"https://{region}.api.riotgames.com/lol/league/v4/masterleagues/by-queue/{queue}"
+    res = session.get(url).json().get("entries")
+
+    players = []
+    for player in res:
+        players.append(player.get("puuid"))
+    return players
+
 def get_matches(region, puuid):
     url = f"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids"
-    payload = {"count": 10}
+    payload = {"count": 5}
     res = session.get(url, params=payload)
     return res.json()
 
@@ -71,12 +80,14 @@ if __name__ == "__main__":
         print("Created matches.csv with headers.")
 
     matches = set()
-    ids = get_ids_noob(REGION2, "RANKED_SOLO_5x5", "DIAMOND", "I")
+    # ids = get_ids_noob(REGION2, "RANKED_SOLO_5x5", "DIAMOND", "I")
+    ids = get_ids_masters(REGION2, "RANKED_SOLO_5x5")
     print(f" {len(ids)} playes")
     
-    for id in ids:
+    for i, id in enumerate(ids):
         player_match = get_matches(REGION, id)
         if isinstance(player_match, list):
+            print(f"match: {i}")
             matches.update(player_match)
         time.sleep(1.2)
 
