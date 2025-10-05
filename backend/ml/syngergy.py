@@ -31,8 +31,6 @@ def build_stats(df):
     counter_winrates = {pair: np.mean(outcomes) for pair, outcomes in counter_results.items()}
     return pair_winrates, counter_winrates
 
-
-
 def get_synergy_score(team, pair_winrates):
     pairs = list(combinations(sorted(team), 2))
     scores = [pair_winrates.get((c1, c2), 0.5) for c1, c2 in pairs] 
@@ -70,3 +68,30 @@ def encode_matches(df, champ_to_idx):
         y.append(0)  
 
     return np.array(X), np.array(y)
+
+def add_roles(input_csv, output_csv):
+    roles = ["Top", "Jungle", "Mid", "ADC", "Support"]
+    df = pd.read_csv(input_csv)
+    df = df.dropna()
+    new_rows = []
+    
+    for _, row in df.iterrows():
+        winners = row["winners"].split(",")
+        losers = row["losers"].split(",")
+        
+        if len(winners) == 5 and len(losers) == 5:
+            winners_with_roles = [f"{champ}_{roles[i]}" for i, champ in enumerate(winners)]
+            losers_with_roles = [f"{champ}_{roles[i]}" for i, champ in enumerate(losers)]
+            
+            new_rows.append({
+                "id": row["id"],
+                "winners": ",".join(winners_with_roles),
+                "losers": ",".join(losers_with_roles)
+            })
+    
+    new_df = pd.DataFrame(new_rows)
+    new_df.to_csv(output_csv, index=False)
+    print(f"doena")
+
+if __name__ == "__main__":
+    add_roles("matches.csv", "matches_roles.csv")
